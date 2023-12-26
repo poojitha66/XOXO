@@ -1,6 +1,11 @@
-const X_CLASS = 'x'
-const CIRCLE_CLASS = 'circle'
-const WINNING_COMBINATIONS = [
+/*----- constants -----*/
+const COLOR_LOOKUP = {
+  '1': 'grey',
+  '-1': 'brown',
+  'null': 'white'
+};
+
+const winningCombos = [
   [0, 1, 2],
   [3, 4, 5],
   [6, 7, 8],
@@ -9,81 +14,95 @@ const WINNING_COMBINATIONS = [
   [2, 5, 8],
   [0, 4, 8],
   [2, 4, 6]
-]
-const cellElements = document.querySelectorAll('[data-cell]')
-const board = document.getElementById('board')
-const winningMessageElement = document.getElementById('winningMessage')
-const restartButton = document.getElementById('restartButton')
-const winningMessageTextElement = document.querySelector('[data-winning-message-text]')
-let circleTurn
+];
 
-startGame()
+/*----- app's state (variables) -----*/
+let board, turn, winner;
 
-restartButton.addEventListener('click', startGame)
+/*----- cached element references -----*/
+const message = document.querySelector('h1');
+const playAgainBtn = document.querySelector('button');
+// Note: Could also cache the <div> elements for the squares and avoid
+//       the ids on them - like we did with the Connect-Four code-along
 
-function startGame() {
-  circleTurn = false
-  cellElements.forEach(cell => {
-    cell.classList.remove(X_CLASS)
-    cell.classList.remove(CIRCLE_CLASS)
-    cell.removeEventListener('click', handleClick)
-    cell.addEventListener('click', handleClick, { once: true })
-  })
-  setBoardHoverClass()
-  winningMessageElement.classList.remove('show')
+/*----- event listeners -----*/
+document.getElementById('board').addEventListener('click', handleMove);
+playAgainBtn.addEventListener('click', initialize);
+
+/*----- functions -----*/
+initialize();
+
+// Initialize all state variables, then call render()
+function initialize() {
+  board = [null, null, null, null, null, null, null, null, null];
+  // OR initialize like this:
+  // board = new Array(9).fill(null);
+  turn = 1;
+  winner = null;
+  render();
 }
 
-function handleClick(e) {
-  const cell = e.target
-  const currentClass = circleTurn ? CIRCLE_CLASS : X_CLASS
-  placeMark(cell, currentClass)
-  if (checkWin(currentClass)) {
-    endGame(false)
-  } else if (isDraw()) {
-    endGame(true)
-  } else {
-    swapTurns()
-    setBoardHoverClass()
+// Update all impacted state, then call render()
+function handleMove(evt) {
+  // obtain index of square
+  const idx = parseInt(evt.target.id.replace('sq-', ''));
+  // Guards
+  if (
+    // Didn't click <div> in grid
+    isNaN(idx) ||
+    // Square already taken
+    board[idx] ||
+    // Game over
+    winner
+  ) return;
+  // Update state (board, turn, winner)
+  board[idx] = turn;
+  turn *= -1;
+  winner = getWinner();
+  // Render updated state
+  render();
+}
+
+function getWinner() {
+  for (let i = 0; i < winningCombos.length; i++) {
+    if (Math.abs(board[winningCombos[i][0]] + board[winningCombos[i][1]] + board[winningCombos[i][2]]) === 3) return board[winningCombos[i][0]];
   }
+  // Less elegant approach:
+  // if (Math.abs(board[0] + board[1] + board[2]) === 3) return board[0];``
+  // if (Math.abs(board[3] + board[4] + board[5]) === 3) return board[3];
+  // if (Math.abs(board[6] + board[7] + board[8]) === 3) return board[6];
+  // if (Math.abs(board[0] + board[3] + board[6]) === 3) return board[0];
+  // if (Math.abs(board[1] + board[4] + board[7]) === 3) return board[1];
+  // if (Math.abs(board[2] + board[5] + board[8]) === 3) return board[2];
+  // if (Math.abs(board[0] + board[4] + board[8]) === 3) return board[0];
+  // if (Math.abs(board[2] + board[4] + board[6]) === 3) return board[2];
+  if (board.includes(null)) return null;
+  return 'T';
 }
 
-function endGame(draw) {
-  if (draw) {
-    winningMessageTextElement.innerText = 'Draw!'
+// Visualize all state and info in the DOM
+function render() {
+  renderBoard();
+  renderMessage();
+  // Hide/show PLAY AGAIN button
+  playAgainBtn.disabled = !winner;
+}
+
+function renderBoard() {
+  board.forEach(function(sqVal, idx) {
+    const squareEl = document.getElementById(`sq-${idx}`);
+    squareEl.style.backgroundColor = COLOR_LOOKUP[sqVal];
+    // Add class if square available for hover effect
+    squareEl.className = !sqVal ? 'avail' : '';
+  });
+}
+
+function renderMessage() {
+  if (winner === 'T') {
+    message.innerHTML = 'Rats, another tie!';
+  } else if (winner) {
+    message.innerHTML = `Congrats <span style="color: ${COLOR_LOOKUP[winner]}">${COLOR_LOOKUP[winner].toUpperCase()}</span>!`;
   } else {
-    winningMessageTextElement.innerText = `${circleTurn ? "O's" : "X's"} Wins!`
+    message.innerHTML = `<span style="color: ${COLOR_LOOKUP[turn]}">${COLOR_LOOKUP[turn].toUpperCase()}</span>'s Turn`;
   }
-  winningMessageElement.classList.add('show')
-}
-
-function isDraw() {
-  return [...cellElements].every(cell => {
-    return cell.classList.contains(X_CLASS) || cell.classList.contains(CIRCLE_CLASS)
-  })
-}
-
-function placeMark(cell, currentClass) {
-  cell.classList.add(currentClass)
-}
-
-function swapTurns() {
-  circleTurn = !circleTurn
-}
-
-function setBoardHoverClass() {
-  board.classList.remove(X_CLASS)
-  board.classList.remove(CIRCLE_CLASS)
-  if (circleTurn) {
-    board.classList.add(CIRCLE_CLASS)
-  } else {
-    board.classList.add(X_CLASS)
-  }
-}
-
-function checkWin(currentClass) {
-  return WINNING_COMBINATIONS.some(combination => {
-    return combination.every(index => {
-      return cellElements[index].classList.contains(currentClass)
-    })
-  })
 }

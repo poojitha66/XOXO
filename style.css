@@ -1,67 +1,60 @@
-/* Reset and basic styling */
-body {
-    margin: 0;
-    display: flex;
-    justify-content: center;
+* {
+    box-sizing: border-box;
+    font-family: Georgia, Times, serif;
+  }
+  
+  
+  
+  body{
+    display:flex;
+    flex-direction: column;
     align-items: center;
-    height: 100vh;
-    background-color: #2ecc71; /* Changing the background color of the entire page to green */
-}
-
-.board {
-    width: 60vw; /* Adjusting the width of the game board */
-    height: 60vw; /* Making the game board square */
+    background-color: black;
+  }
+  
+  h1 {
+    margin-top: 0;
+    margin-bottom: 20vmin;
+  }
+  
+  #board {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 10px;
-    background-color: #fff; /* Changing the background color of the game board to white */
-    border: 5px solid #000; /* Adding a border around the game board */
-    border-radius: 15px; /* Adding some border radius for a softer look */
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* Adding a subtle box shadow */
-}
-
-.cell {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 5em; /* Changing the font size of X and O */
-    color: #000; /* Changing the color of O to black */
+    grid-template-columns: repeat(3, 20vmin);
+    grid-template-rows: repeat(3, 20vmin);
+    background-color: black;
+    border-radius: 10vmin;
+  }
+  
+  #board > div {
+    margin: 3vmin;
+    background-color: white;
+    border: 1vmin solid white;
+    border-radius: None;
+  }
+  
+  #board > div.avail {
     cursor: pointer;
-    position: relative;
-    transition: color 0.3s; /* Adding a transition for color change */
-}
-
-.cell:hover {
-    color: #3498db; /* Changing the color of X to blue on hover */
-}
-
-.cell::before,
-.cell::after {
-    content: '';
-    position: absolute;
-    width: 60%;
-    height: 20%;
-    background-color: transparent; /* Changing the style of X and O */
-    transition: background-color 0.3s; /* Adding a transition for background-color change */
-}
-
-.cell.x::before,
-.cell.x::after {
-    transform: rotate(45deg); /* Changing the style of X */
-}
-
-.cell.circle::before,
-.cell.circle::after {
-    border-radius: 50%; /* Changing the style of O */
-}
-
-.cell.x::after,
-.cell.circle::after {
-    transform: rotate(-45deg); /* Adjusting the style of O */
-}
-
-.cell:hover::before,
-.cell:hover::after {
-    background-color: #3498db; /* Changing the color of X on hover */
-}
+  }
+  
+  #board > div.avail:hover {
+    border-color: whitesmoke;
+  }
+  
+  button {
+    margin-top: 10vmin;
+    padding: 3vmin;
+    background-color: white;
+    color: black;
+    border-radius: 10vmin;
+    font-size: 5vmin;
+  }
+  
+  button:disabled {
+    background-color: black;
+    color: white;
+  }
+  
+  button:hover:not(:disabled) {
+    background-color: black;
+    color: whitesmoke;
+  }
